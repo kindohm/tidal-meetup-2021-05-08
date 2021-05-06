@@ -1,0 +1,27 @@
+{- 
+
+SuperDirt MIDI Input
+--------------------
+
+MIDI input setup is already documented:
+https://tidalcycles.org/Controller_Input
+
+But let's do some simple stuff...
+-}
+
+d1 $ fast 4 $ s "rytm" # note "c3" # midichan 0 # cps 1
+
+-- control bass drum pitch in code
+d2 $ ccn "17*4" # ccv "[33 77 64 100]" # s "rytm" # midichan 0
+
+-- control bass drum pitch from external MIDI
+-- "96" is the input CC number from the external controller
+-- "17" is the destination CC number on the drum machine
+d2 $ ccn "17*4" # ccv (range 0 127 $ (cI 64 "96")) # s "rytm" # midichan 0
+
+-- can also use MIDI input to set function argument values,
+-- not just control synth params like ccv:
+d1 $ degradeBy (cF 0 "96") $ fast 16 $ s "rytm" # note "c3" # midichan 0 # cps 1
+d1 $ (|* cps (range 1 3 $ (cF 0 "96")) $ fast 16 $ s "rytm" # note "c3" # midichan 0 # cps 1
+
+-- use cI for integers and cF for floats

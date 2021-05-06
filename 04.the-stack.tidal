@@ -1,0 +1,27 @@
+{- 
+
+The Stack
+---------
+
+Everything I do is based in a stack. It doesn't have to 
+be, but then I can throw a fun function on top of the
+whole stack if I want to.
+
+Anyway, given that I use a MIDI controller to control the
+synth, I have to commit to using the machine in a similar
+way all the time. _This is OK_.
+
+The parts are usually:
+
+- bass drum
+- snare or clap
+- percussion or fx, 1
+- percussion or fx, 2
+- hi hat or percussion 3
+- background pad
+
+-}
+
+-- INSERT COMPLEX STACK HERE (can be a real example)
+
+

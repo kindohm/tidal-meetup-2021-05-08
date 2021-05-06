@@ -1,0 +1,78 @@
+{- 
+
+MIDI Output Basics
+------------------
+
+The existing SuperDirt MIDI tutorial on tidalcycles.org is your friend:
+https://tidalcycles.org/SuperDirt_MIDI_Tutorial
+Most of the hard work is in getting SuperDirt MIDI to boot correctly.
+
+-}
+
+-- vanilla note output. my drum machine pads' default note is C3:
+
+d1 $ struct "t(3,8)" $ midichan 0 # note "c3" s "rytm" # cps 0.7
+
+-- each pad is on its own channel:
+
+d1 $ struct "t(3,8)" $ fast 2 $ midichan "0 1 2 3" 
+    # note "c3" s "rytm" # cps 0.7
+
+-- can also play melodically:
+
+d1 $ scale "ritusen" ("0 1 -1 -2 3 4" + "<-24>") # midichan 0 # s "rytm" # cps 0.7
+
+-- and of course layer everything together:
+
+d1 
+  $ stack [
+    -- kick
+    struct "t(<3 5 2>,8)" $ midichan 0
+    -- snare
+    , midichan 1
+    -- clap
+    , (0.25 ~>) $ fast 2 $ midichan 3
+    -- rimshot
+    , struct "t(9,16,<0 5 15>" $ midichan 2
+    -- hihat
+    , struct "t(13,16,<1 2>)" $ midichan 10
+  ] # cps 0.7 # s "rytm" # note "c3"
+
+
+-- sometimes it is hard to remember the midichan values
+-- for each pad, so I make shortcuts:
+
+let bd = midichan 0
+    sd = midichan 1
+    ch = midichan 10
+    rytm = s "rytm" # note "c3"
+
+d1
+  $ stack [ 
+    struct "t(3,8)" $ bd, 
+    slow 2 $ sd, 
+    fast 16 $ ch 
+  ] # rytm
+
+-- yaxu has also shared this fancy drum pad mapping code on club.tidalcycles.org:
+-- https://club.tidalcycles.org/t/writing-addon-library-for-midi-instruments/472/2
+
+let  
+  rytms = s "rytm"
+  drum :: Pattern String -> ControlPattern
+  drum = midichan . (drumN <$>)
+  drumN :: Num a => String -> a
+  drumN "bd" = 2
+  drumN "sd" = 1
+  drumN "ch" = 10
+  drumN "oh" = 11
+  drumN "cp" = 3
+  drumN "lt" = 5
+  drumN "mt" = 6
+  drumN "ht" = 7
+  drumN "pad" = 4
+  drumN _ = 12
+  rytm x = drum x # rytms # note "c3"
+
+
+d1 $ rytm "bd [cp, mt] ch*4 sd"

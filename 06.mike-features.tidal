@@ -1,0 +1,28 @@
+{- 
+
+Mike Features
+-------------
+
+I like complex patterns that doesn't really seem to repeat,
+but sometimes I introduce some repetition with a custom
+function that uses "iter". I turn this on/off with a MIDI toggle.
+
+I also sometimes enable random tempo swings every cycle, and
+use MIDI input to affect the range of the swings and
+whether the feature is on or off.
+
+-}
+
+
+-- useIter
+let useIter = every ( range 0 1 $  (cI 0 "89") ) (iter 16)  
+
+-- DO BIG EXAMPLE HERE...
+
+
+-- tempo swings
+let minTempo = (range 1 0.333 $ (cF 0 "88"))
+    maxTempo = (range 1 1.5 $ (cF 0 "88"))
+    cpsDisc min max = (|* cps (discRange min max))
+
+-- DO OTHER BIG EXAMPLE HERE...

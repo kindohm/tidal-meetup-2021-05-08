@@ -1,0 +1,28 @@
+{- 
+
+Controlling The Stack
+---------------------
+
+The simplest thing I do is use MIDI toggle
+buttons on the MIDI controller to turn a
+part of the stack on or off. 
+
+The toggle goes high at MIDI CC value 127,
+or low at value 0. 
+
+I then create a nifty 
+function in Tidal to turn things on or off.
+-}
+
+let mute p = (const $ s "~") $ p
+    partOn inputCC = every ( range 1 0 $  (cI 0 inputCC) ) mute
+    kickOn p = partOn 71 $ p
+    bgOn p = partOn 77 $ p 
+    clapOn p = partOn 95 $ p 
+    perc1On p = partOn 79 $ p 
+    perc2On p = partOn 87 $ p 
+    hatOn p = partOn 93 $ p 
+
+
+
+-- REPEAT STACK DEMO BUT USE THESE FUNCTIONS

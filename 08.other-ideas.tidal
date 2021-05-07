@@ -8,3 +8,12 @@ a MIDI controller knob to a parameter of the
 Euclid function, so here goes nothing...
 
 -}
+
+let toPInt = (floor <$>)
+
+d1 $ euclid (toPInt $ range 1 8 $ (cF 0 "88")) 8 $ bd # rytm
+
+d1 $ rot "0 1 2" $ euclid (fmap floor $ range 1 9 $ (cF 0 "88")) 8 $ bd # rytm
+
+
+

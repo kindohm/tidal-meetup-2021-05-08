@@ -18,4 +18,30 @@ let sceneRange = (range 0 3 $ (cF 0 "90"))
 
 
 -- SHOW EXAMPLE HERE
+d1  
+  $ cpsDisc minTempo maxTempo
+  $ stack [
+    -- pad
+    bgOn $ slow 4 $ (|+ note (shiftBy 1100 $ choose [-36,-24,-12])) 
+      $ note (scale "ritusen" "{0 -1 1 -2 2}%1") # pad # gain 1.2
+    , useIter $ reduce
+      $ stack [
+        -- kick
+        bdOn $ struct main $ bd # gain 0.8
+        -- perc1
+        , perc1On $ someCyclesBy 0.5 (superimpose (0.125 ~>)) $ (0.0625 ~>) 
+          $ struct main $ perc1
+        -- perc2
+        , perc2On $ someCyclesBy 0.5 (superimpose (0.125 ~>)) $ (0.125 ~>) 
+          $ struct main $ perc2
+        -- cp
+        , clapOn $ struct cpp $ cp
+        -- ch
+        , hatOn $ sometimesBy 0.08 (|+ midichan 1) 
+          $ struct chp $ ch
+      ]
+    , scene (segment 2 $ range 0 sceneRange $ shrand 9991) 
+  ] # rytm # cps (170/240)
 
+
+hush

@@ -24,4 +24,43 @@ The parts are usually:
 
 -- INSERT COMPLEX STACK HERE (can be a real example)
 
+-- synth setup
+let bd = midichan 2 # note "c3"
+    cp = midichan 3 # note "c3"
+    perc1 = midichan 6 # note "c3"
+    perc2 = midichan 7 # note "c3"
+    ch = midichan 10 # note "c3"
+    pad = midichan 0
+    rytm = s "rytm"
+
+-- helper funcs
+let shift p = (1 ~>) $ p
+    shiftBy x p = (x ~>) $ p
+    shrand x = shiftBy x $ rand
+
+-- patterns
+let main = (someCyclesBy 0.2 (within (0,0.5) (const $ "~")) 
+            $ "{1@7 1@11 1@13 1@8 1@3}%16" :: Pattern Bool)
+    cpp = "{1@23 1@17}%16"
+    chp = "1(<13 14 11 15>,16,<0 44 38 7 13 4>)"
+
+d1  
+  $ stack [
+    -- pad
+    slow 4 $ (|+ note (shiftBy 1100 $ choose [-36,-24,-12])) 
+      $ note (scale "ritusen" "{0 -1 1 -2 2}%1") # pad # gain 1.2
+    -- kick
+    , struct main $ bd # gain 0.8
+    -- perc1
+    , someCyclesBy 0.5 (superimpose (0.125 ~>)) $ (0.0625 ~>) 
+      $ struct main $ perc1
+    -- perc2
+    , someCyclesBy 0.5 (superimpose (0.125 ~>)) $ (0.125 ~>) 
+      $ struct main $ perc2
+    -- cp
+    , struct cpp $ cp
+    -- ch
+    , sometimesBy 0.08 (|+ midichan 1) 
+      $ struct chp $ ch
+  ] # rytm # cps (170/240)
 

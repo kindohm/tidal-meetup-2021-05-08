@@ -16,13 +16,61 @@ function in Tidal to turn things on or off.
 
 let mute p = (const $ s "~") $ p
     partOn inputCC = every ( range 1 0 $  (cI 0 inputCC) ) mute
-    kickOn p = partOn 71 $ p
-    bgOn p = partOn 77 $ p 
-    clapOn p = partOn 95 $ p 
-    perc1On p = partOn 79 $ p 
-    perc2On p = partOn 87 $ p 
-    hatOn p = partOn 93 $ p 
+    bdOn p = partOn "71" $ p
+    bgOn p = partOn "77" $ p 
+    clapOn p = partOn "95" $ p 
+    perc1On p = partOn "79" $ p 
+    perc2On p = partOn "87" $ p 
+    hatOn p = partOn "93" $ p 
 
 
 
 -- REPEAT STACK DEMO BUT USE THESE FUNCTIONS
+d1  
+  $ stack [
+    -- pad
+    bgOn $ slow 4 $ (|+ note (shiftBy 1100 $ choose [-36,-24,-12])) 
+      $ note (scale "ritusen" "{0 -1 1 -2 2}%1") # pad # gain 1.2
+    -- kick
+    , bdOn $ struct main $ bd # gain 0.8
+    -- perc1
+    , perc1On $ someCyclesBy 0.5 (superimpose (0.125 ~>)) $ (0.0625 ~>) 
+      $ struct main $ perc1
+    -- perc2
+    , perc2On $ someCyclesBy 0.5 (superimpose (0.125 ~>)) $ (0.125 ~>) 
+      $ struct main $ perc2
+    -- cp
+    , clapOn $ struct cpp $ cp
+    -- ch
+    , hatOn $ sometimesBy 0.08 (|+ midichan 1) 
+      $ struct chp $ ch
+  ] # rytm # cps (170/240)
+
+
+-- degradeBy sometimes feels like the laziest way to 
+-- affect complexity, but wow do I love it.
+
+-- wire up a MIDI knob to control a global degradeBy:
+let reduce = degradeBy (cF 0 "96")
+
+d1  
+  $ stack [
+    -- pad
+    bgOn $ slow 4 $ (|+ note (shiftBy 1100 $ choose [-36,-24,-12])) 
+      $ note (scale "ritusen" "{0 -1 1 -2 2}%1") # pad # gain 1.2
+    , reduce $ stack [
+        -- kick
+        bdOn $ struct main $ bd # gain 0.8
+        -- perc1
+        , perc1On $ someCyclesBy 0.5 (superimpose (0.125 ~>)) $ (0.0625 ~>) 
+          $ struct main $ perc1
+        -- perc2
+        , perc2On $ someCyclesBy 0.5 (superimpose (0.125 ~>)) $ (0.125 ~>) 
+          $ struct main $ perc2
+        -- cp
+        , clapOn $ struct cpp $ cp
+        -- ch
+        , hatOn $ sometimesBy 0.08 (|+ midichan 1) 
+          $ struct chp $ ch
+    ]
+  ] # rytm # cps (170/240)

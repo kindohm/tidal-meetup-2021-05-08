@@ -20,10 +20,11 @@ let sceneRange = (range 0 3 $ (cF 0 "90"))
 -- SHOW EXAMPLE HERE
 d1  
   $ cpsDisc minTempo maxTempo
+  $ (|* gain 1.2)
   $ stack [
     -- pad
     bgOn $ slow 4 $ (|+ note (shiftBy 1100 $ choose [-36,-24,-12])) 
-      $ note (scale "ritusen" "{0 -1 1 -2 2}%1") # pad # gain 1.2
+      $ note (scale "ritusen" "{0 -1 1 -2 2}%1") # pad 
     , useIter $ reduce
       $ stack [
         -- kick

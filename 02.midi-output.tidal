@@ -11,16 +11,19 @@ Most of the hard work is in getting SuperDirt MIDI to boot correctly.
 
 -- vanilla note output. my drum machine pads' default note is C3:
 
-d1 $ struct "t(3,8)" $ midichan 0 # note "c3" # s "rytm" # cps 0.7
+d1 $ struct "t(3,8)" $ midichan 0 # note "c3" # s "rytm" # cps 0.7 # amp 0.9
+
+hush 
+
 
 -- each pad is on its own channel:
 
 d1 $ struct "t(3,8,<0 1 10>)" $ fast 6 $ midichan "0 1 2 3" 
-    # note "c3" # s "rytm" # cps 0.7
+    # note "c3" # s "rytm" # cps 0.7 # amp 0.9
 
 -- can also play melodically:
 
-d1 $ scale "ritusen" ("0 1 -1 -2 3 4" + "<-12>") # midichan 0 # s "rytm" # cps 0.7
+d1 $ scale "ritusen" ("0 1 -1 -2 3 4" + "<-12>") # midichan 0 # s "rytm" # cps 0.7 # amp 0.9
 
 -- and of course layer everything together:
 
@@ -36,7 +39,7 @@ d1
     , struct "t(7,16,<0 5 15>)" $ midichan 2
     -- hihat
     , struct "t(13,16,<1 2>)" $ midichan 8
-  ] # cps 0.7 # s "rytm" # note "c3"
+  ] # cps 0.7 # s "rytm" # note "c3" # amp 0.9
 
 hush 
 
@@ -53,7 +56,9 @@ d1
     struct "t(3,8)" $ bd, 
     (0.5 ~>) $ sd, 
     fast 16 $ ch 
-  ] # rytm
+  ] # rytm # amp 0.9
+
+  hush
 
 -- yaxu has also shared this fancy drum pad mapping code on club.tidalcycles.org:
 -- https://club.tidalcycles.org/t/writing-addon-library-for-midi-instruments/472/2
@@ -76,7 +81,7 @@ let
   rytm x = drum x # rytms # note "c3"
 
 
-d1 $ rytm "[bd lt*2] [cp, ~ mt] [oh ch]*2 [sd ht?]"
+d1 $ rytm "[bd lt*2] [cp, ~ mt] [oh ch]*2 [sd ht?]" # amp 0.9
 
 hush
 

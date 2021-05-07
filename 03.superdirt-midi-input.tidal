@@ -6,26 +6,41 @@ SuperDirt MIDI Input
 MIDI input setup is already documented:
 https://tidalcycles.org/Controller_Input
 
-But let's do some simple stuff...
+But let's try some things out...
 -}
 
-d1 $ fast 4 $ s "rytm" # note "c3" # midichan 0 # cps 1
+-- can ause MIDI input to set function argument values:
+d1 $ degradeBy (cF 0 "88") $ s "rytm*16" # note "c3" # midichan 0 # cps 0.7 # amp 0.9
 
--- control bass drum pitch in code
-d2 $ every 3 rev $ ccn "17*4" # ccv "[33 77 64 100]" # s "rytm" # midichan 0
+hush 
 
--- control bass drum pitch from external MIDI
--- "96" is the input CC number from the external controller
--- "17" is the destination CC number on the drum machine
-d2 $ ccn "17*4" # ccv (range 0 127 $ (cF 64 "96")) # s "rytm" # midichan 0
 
--- can also use MIDI input to set function argument values,
--- not just control synth params like ccv:
-d1 $ degradeBy (cF 0 "96") $ s "rytm*16" # note "c3" # midichan 0 # cps 1
+d1  $ sometimesBy (cF 0 "96") (off "1s" id) 
+    $ s "rytm(<5 3>,8,<0 2 3>)" 
+    # note "c3" # midichan 0 # cps 0.5 # amp 0.9
 
-d1 $ (|* cps (range 1 8 $ (cF 0 "96"))) $ s "rytm*4" # note "c3" # midichan 0 # cps 1
-
--- everything I do uses cF for floats (see SuperDirt bootup code)
+d1  $ sometimesBy (cF 0 "88") (off "1s" id) 
+    $ sometimesBy (cF 0 "96") (off "3s" (|+ midichan 3)) 
+    $ s "rytm(<5 3>,8,<0 2 3>)" 
+    # note "c3" # midichan 0 # cps 0.5 # amp 0.9
 
 
 hush
+
+
+-- you can of course use CC input to affect "synth params" like ccv
+-- this pattern is a "pass through" of MIDI CC:
+--   * turn a knob on the MIDI controller
+--   * MIDI CC input into tidal
+--   * MIDI CC output to drum synth
+d1 $ stack [
+  note "c3(5,8,<0 3 5>)",
+  fast 8 $ ccn 17 # ccv (range 0 127 $ (cF 64 "96") )
+] # cps 0.5 # amp 0.9 # s "rytm" # midichan 0
+
+
+-- everything I do uses cF for floats which produces a value between 0 and 1 
+-- (see SuperDirt bootup code)
+
+hush
+

@@ -27,10 +27,11 @@ let mute p = (const $ s "~") $ p
 
 -- REPEAT STACK DEMO BUT USE THESE FUNCTIONS
 d1  
+  $ (|* gain 1.2)
   $ stack [
     -- pad
     bgOn $ slow 4 $ (|+ note (shiftBy 1100 $ choose [-36,-24,-12])) 
-      $ note (scale "ritusen" "{0 -1 1 -2 2}%1") # pad # gain 1.2
+      $ note (scale "ritusen" "{0 -1 1 -2 2}%1") # pad 
     -- kick
     , bdOn $ struct main $ bd # gain 0.8
     -- perc1
@@ -46,6 +47,8 @@ d1
       $ struct chp $ ch
   ] # rytm # cps (170/240)
 
+  hush
+
 
 -- degradeBy sometimes feels like the laziest way to 
 -- affect complexity, but wow do I love it.
@@ -54,10 +57,11 @@ d1
 let reduce = degradeBy (cF 0 "96")
 
 d1  
+  $ (|* gain 1.2)
   $ stack [
     -- pad
     bgOn $ slow 4 $ (|+ note (shiftBy 1100 $ choose [-36,-24,-12])) 
-      $ note (scale "ritusen" "{0 -1 1 -2 2}%1") # pad # gain 1.2
+      $ note (scale "ritusen" "{0 -1 1 -2 2}%1") # pad 
     , reduce $ stack [
         -- kick
         bdOn $ struct main $ bd # gain 0.8
@@ -74,3 +78,5 @@ d1
           $ struct chp $ ch
     ]
   ] # rytm # cps (170/240)
+
+  hush

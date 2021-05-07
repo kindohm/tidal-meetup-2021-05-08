@@ -17,12 +17,12 @@ whether the feature is on or off.
 -- useIter
 let useIter p = every (  cI 0 "89" ) (iter 8) $ p
 
--- DO BIG EXAMPLE HERE...
 d1  
+  $ (|* gain 1.2)
   $ stack [
     -- pad
     bgOn $ slow 4 $ (|+ note (shiftBy 1100 $ choose [-36,-24,-12])) 
-      $ note (scale "ritusen" "{0 -1 1 -2 2}%1") # pad # gain 1.2
+      $ note (scale "ritusen" "{0 -1 1 -2 2}%1") # pad 
     , useIter $ reduce
       $ stack [
         -- kick
@@ -41,6 +41,10 @@ d1
       ]
   ] # rytm # cps (170/240)
 
+
+  hush
+
+
 -- tempo swings
 let minTempo = (range 1 0.333 $ (cF 0 "88"))
     maxTempo = (range 1 1.25 $ (cF 0 "88"))
@@ -50,10 +54,11 @@ let minTempo = (range 1 0.333 $ (cF 0 "88"))
 -- DO OTHER BIG EXAMPLE HERE...
 d1  
   $ cpsDisc minTempo maxTempo
+  $ (|* gain 1.2)
   $ stack [
     -- pad
     bgOn $ slow 4 $ (|+ note (shiftBy 1100 $ choose [-36,-24,-12])) 
-      $ note (scale "ritusen" "{0 -1 1 -2 2}%1") # pad # gain 1.2
+      $ note (scale "ritusen" "{0 -1 1 -2 2}%1") # pad 
     , useIter $ reduce
       $ stack [
         -- kick

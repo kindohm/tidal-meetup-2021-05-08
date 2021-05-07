@@ -11,46 +11,47 @@ Most of the hard work is in getting SuperDirt MIDI to boot correctly.
 
 -- vanilla note output. my drum machine pads' default note is C3:
 
-d1 $ struct "t(3,8)" $ midichan 0 # note "c3" s "rytm" # cps 0.7
+d1 $ struct "t(3,8)" $ midichan 0 # note "c3" # s "rytm" # cps 0.7
 
 -- each pad is on its own channel:
 
-d1 $ struct "t(3,8)" $ fast 2 $ midichan "0 1 2 3" 
-    # note "c3" s "rytm" # cps 0.7
+d1 $ struct "t(3,8,<0 1 10>)" $ fast 6 $ midichan "0 1 2 3" 
+    # note "c3" # s "rytm" # cps 0.7
 
 -- can also play melodically:
 
-d1 $ scale "ritusen" ("0 1 -1 -2 3 4" + "<-24>") # midichan 0 # s "rytm" # cps 0.7
+d1 $ scale "ritusen" ("0 1 -1 -2 3 4" + "<-12>") # midichan 0 # s "rytm" # cps 0.7
 
 -- and of course layer everything together:
 
 d1 
   $ stack [
     -- kick
-    struct "t(<3 5 2>,8)" $ midichan 0
+    struct "t(<3 5 2>,8,1)" $ midichan 0
     -- snare
     , midichan 1
     -- clap
     , (0.25 ~>) $ fast 2 $ midichan 3
     -- rimshot
-    , struct "t(9,16,<0 5 15>" $ midichan 2
+    , struct "t(7,16,<0 5 15>)" $ midichan 2
     -- hihat
-    , struct "t(13,16,<1 2>)" $ midichan 10
+    , struct "t(13,16,<1 2>)" $ midichan 8
   ] # cps 0.7 # s "rytm" # note "c3"
 
+hush 
 
 -- sometimes it is hard to remember the midichan values
 -- for each pad, so I make shortcuts:
 
 let bd = midichan 0
     sd = midichan 1
-    ch = midichan 10
+    ch = midichan 8
     rytm = s "rytm" # note "c3"
 
 d1
   $ stack [ 
     struct "t(3,8)" $ bd, 
-    slow 2 $ sd, 
+    (0.5 ~>) $ sd, 
     fast 16 $ ch 
   ] # rytm
 
@@ -62,10 +63,10 @@ let
   drum :: Pattern String -> ControlPattern
   drum = midichan . (drumN <$>)
   drumN :: Num a => String -> a
-  drumN "bd" = 2
+  drumN "bd" = 0
   drumN "sd" = 1
-  drumN "ch" = 10
-  drumN "oh" = 11
+  drumN "ch" = 8
+  drumN "oh" = 9
   drumN "cp" = 3
   drumN "lt" = 5
   drumN "mt" = 6
@@ -75,4 +76,8 @@ let
   rytm x = drum x # rytms # note "c3"
 
 
-d1 $ rytm "bd [cp, mt] ch*4 sd"
+d1 $ rytm "[bd lt*2] [cp, ~ mt] [oh ch]*2 [sd ht?]"
+
+hush
+
+

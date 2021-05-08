@@ -1,3 +1,4 @@
+// SUPERDIRT BOOTUP
 (
 s.options.numBuffers = 1024 * 16;
 s.options.memSize = 8192 * 16;
@@ -20,6 +21,8 @@ s.waitForBoot {
 s.latency = 0;
 );
 
+
+// MIDI CONTROLLER INPUT
 // Eval this block to enable MIDI input.
 (
 var on, off, cc;

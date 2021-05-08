@@ -24,8 +24,6 @@ let mute p = (const $ s "~") $ p
     hatOn p = partOn "93" $ p 
 
 
-
--- REPEAT STACK DEMO BUT USE THESE FUNCTIONS
 d1  
   $ (|* gain 1.2)
   $ stack [

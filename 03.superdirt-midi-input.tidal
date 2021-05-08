@@ -9,7 +9,7 @@ https://tidalcycles.org/Controller_Input
 But let's try some things out...
 -}
 
--- can ause MIDI input to set function argument values:
+-- can use MIDI input to set function argument values:
 d1 $ degradeBy (cF 0 "88") $ s "rytm*16" # note "c3" # midichan 0 # cps 0.7 # amp 0.9
 
 hush 

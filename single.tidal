@@ -1,0 +1,423 @@
+-----------
+-- INTRO --
+-----------
+
+-- This is how I use Tidal to perform with MIDI-based devices.
+-- You can use this stuff for both hardware and software MIDI.
+
+-- TOP SECRET EYES ONLY SSHHHHH!!!!
+
+-- The reason I like to use this type of setup with Tidal is
+-- because it allows me to perform with a MIDI controller 
+-- instead of typing on a keyboard. Is that bad?
+
+-- https://tidalcycles.org/SuperDirt_MIDI_Tutorial
+
+
+----------------------
+-- BASIC NOTE OUTPUT--
+----------------------
+
+-- vanilla note output. my drum synth's default note is C3:
+
+d1 $ struct "t(3,8)" $ midichan 0 # note "c3" # s "rytm" # cps 0.7 # amp 0.9
+
+
+-- each pad is on its own channel:
+
+d1 $ struct "t(3,8,<0 1 10>)" $ fast 6 $ midichan "0 1 2 3" 
+    # note "c3" # s "rytm" # cps 0.7 # amp 0.9
+
+
+-- can also play melodically:
+
+d1 $ scale "ritusen" ("0 1 -1 -2 3 4" + "<-12>") # midichan 0 # s "rytm" # cps 0.7 # amp 0.9
+
+
+-- and of course layer everything together in a stack:
+
+d1 
+  $ stack [
+    -- kick
+    struct "t(<3 5 2>,8,1)" $ midichan 0
+    -- snare
+    , midichan 1
+    -- clap
+    , (0.25 ~>) $ fast 2 $ midichan 3
+    -- rimshot
+    , struct "t(7,16,<0 5 15>)" $ midichan 2
+    -- hihat
+    , struct "t(13,16,<1 2>)" $ midichan 8
+  ] # cps 0.7 # s "rytm" # note "c3" # amp 0.9
+
+hush 
+
+
+-- sometimes it is hard to remember the midichan values
+-- for each pad, so I make shortcuts:
+
+let bd = midichan 0
+    sd = midichan 1
+    ch = midichan 8
+    rytm = s "rytm" # note "c3"
+
+d1
+  $ stack [ 
+    struct "t(3,8)" $ bd, 
+    (0.5 ~>) $ sd, 
+    fast 16 $ ch 
+  ] # rytm # amp 0.9
+
+  hush
+
+-- yaxu has also shared this fancy drum pad mapping code on club.tidalcycles.org:
+-- https://club.tidalcycles.org/t/writing-addon-library-for-midi-instruments/472/2
+
+let  
+  rytms = s "rytm"
+  drum :: Pattern String -> ControlPattern
+  drum = midichan . (drumN <$>)
+  drumN :: Num a => String -> a
+  drumN "bd" = 0
+  drumN "sd" = 1
+  drumN "ch" = 8
+  drumN "oh" = 9
+  drumN "cp" = 3
+  drumN "lt" = 5
+  drumN "mt" = 6
+  drumN "ht" = 7
+  drumN "pad" = 4
+  drumN _ = 12
+  rytm x = drum x # rytms # note "c3"
+
+
+d1 $ rytm "[bd lt*2] [cp, ~ mt] [oh ch]*2 [sd ht?]" # amp 0.9
+
+
+hush
+
+
+
+---------------------------
+-- MIDI CONTROLLER INPUT --
+---------------------------
+
+-- documentation:
+-- https://tidalcycles.org/Controller_Input
+
+
+-- use a knob to set a Tidal param:
+d1 $ s "rytm*16" # note "c3" # midichan 0 # cps 0.7 # amp (cF 0 "88")
+
+
+-- use a knob to set function argument values:
+d1 $ degradeBy (cF 0 "88") $ s "rytm*16" # note "c3" # midichan 0 # cps 0.7 # amp 0.9
+
+hush
+
+-- MIDI controller input as composition...
+
+-- here I am using a MIDI controller knob input to
+-- set how likely an "off" function is called:
+
+d1  $ sometimesBy (cF 0 "96") (off "1s" id) 
+    $ s "rytm(<5 3>,8,<0 2 3>)" 
+    # note "c3" # midichan 0 # cps 0.5 # amp 0.9
+
+
+-- adding a 2nd knob that sets how likely
+-- a delayed clap is added:
+
+d1  $ sometimesBy (cF 0 "88") (off "1s" id) 
+    $ (1 ~>)
+    $ sometimesBy (cF 0 "96") (off "3s" (# midichan 3)) 
+    $ s "rytm(<5 3>,8,<0 2 3>)" 
+    # note "c3" # midichan 0 # cps 0.5 # amp 0.9
+
+hush
+
+-- all of my controller knobs input a value that
+-- ranges from 0 to 1.
+
+
+
+
+---------------
+-- THE STACK --
+---------------
+
+-- I like to compose big stacks of patterns
+-- in my spare time. It's what I do ¯\_(ツ)_/¯
+
+-- set up various interesting functions
+-- synth setup
+let bd = midichan 2 # note "c3"
+    cp = midichan 3 # note "c3"
+    perc1 = midichan 6 # note "c3"
+    perc2 = midichan 7 # note "c3"
+    ch = midichan 10 # note "c3"
+    pad = midichan 0
+    rytm = s "rytm"
+
+-- helper funcs
+let shift p = (1 ~>) $ p
+    shiftBy x p = (x ~>) $ p
+    shrand x = shiftBy x $ rand
+
+-- set up rhythmic pattern variables
+let main = (someCyclesBy 0.2 (within (0,0.5) (const $ "~")) 
+            $ "{1@7 1@11 1@13 1@8 1@3}%16" :: Pattern Bool)
+    cpp = "{1@23 1@17}%16"
+    chp = "1(<13 14 11 15>,16,<0 44 38 7 13 4>)"  
+
+-- the stack...
+d1  
+  $ (|* gain 1.2)
+  $ stack [
+    -- pad
+    slow 4 $ (|+ note (shiftBy 1100 $ choose [-36,-24,-12])) 
+      $ note (scale "ritusen" "{0 -1 1 -2 2}%1") # pad 
+    -- kick
+    , struct main $ bd # gain 0.8
+    -- perc1
+    , someCyclesBy 0.5 (superimpose (0.125 ~>)) $ (0.0625 ~>) 
+      $ struct main $ perc1
+    -- perc2
+    , someCyclesBy 0.5 (superimpose (0.125 ~>)) $ (0.125 ~>) 
+      $ struct main $ perc2
+    -- cp
+    , struct cpp $ cp
+    -- ch
+    , sometimesBy 0.08 (|+ midichan 1) 
+      $ struct chp $ ch
+  ] # rytm # cps (170/240)
+
+  hush
+
+
+---------------------------
+-- CONTROLLING THE STACK --
+---------------------------
+
+-- I use my MIDI controller's encoder switches 
+-- (e.g. push down on knob) to turn parts of the
+-- stack on and off.
+
+-- I made some functions to help me with that:
+let mute p = (const $ s "~") $ p
+    partOn inputCC = every ( range 1 0 $  (cI 0 inputCC) ) mute
+    bdOn p = partOn "71" $ p
+    bgOn p = partOn "77" $ p 
+    clapOn p = partOn "95" $ p 
+    perc1On p = partOn "79" $ p 
+    perc2On p = partOn "87" $ p 
+    hatOn p = partOn "93" $ p 
+
+d1  
+  $ (|* gain 1.2)
+  $ stack [
+    -- pad
+    bgOn $ slow 4 $ (|+ note (shiftBy 1100 $ choose [-36,-24,-12])) 
+      $ note (scale "ritusen" "{0 -1 1 -2 2}%1") # pad 
+    -- kick
+    , bdOn $ struct main $ bd # gain 0.8
+    -- perc1
+    , perc1On $ someCyclesBy 0.5 (superimpose (0.125 ~>)) $ (0.0625 ~>) 
+      $ struct main $ perc1
+    -- perc2
+    , perc2On $ someCyclesBy 0.5 (superimpose (0.125 ~>)) $ (0.125 ~>) 
+      $ struct main $ perc2
+    -- cp
+    , clapOn $ struct cpp $ cp
+    -- ch
+    , hatOn $ sometimesBy 0.08 (|+ midichan 1) 
+      $ struct chp $ ch
+  ] # rytm # cps (170/240)
+
+
+hush
+
+-- degradeBy is maybe the laziest feature in Tidal,
+-- but it does so much work in helping to tame
+-- a complex sequence.
+
+-- In fact it's so helpful that I dedicate a knob to it:
+let reduce = degradeBy (cF 0 "96")
+
+
+-- and I apply that knob to a sub-stack of all the drum sounds:
+d1  
+  $ (|* gain 1.2)
+  $ stack [
+    -- pad
+    bgOn $ slow 4 $ (|+ note (shiftBy 1100 $ choose [-36,-24,-12])) 
+      $ note (scale "ritusen" "{0 -1 1 -2 2}%1") # pad 
+    , reduce $ stack [ -- notice the addition of "reduce" here
+        -- kick
+        bdOn $ struct main $ bd # gain 0.8
+        -- perc1
+        , perc1On $ someCyclesBy 0.5 (superimpose (0.125 ~>)) $ (0.0625 ~>) 
+          $ struct main $ perc1
+        -- perc2
+        , perc2On $ someCyclesBy 0.5 (superimpose (0.125 ~>)) $ (0.125 ~>) 
+          $ struct main $ perc2
+        -- cp
+        , clapOn $ struct cpp $ cp
+        -- ch
+        , hatOn $ sometimesBy 0.08 (|+ midichan 1) 
+          $ struct chp $ ch
+    ]
+  ] # rytm # cps (170/240)
+
+hush 
+
+
+
+
+--------------------------------------------
+-- ❤️ FEATURES NEAR AND DEAR TO MY HEART ❤️ --
+--------------------------------------------
+
+-- My patterns tend to lack repetition, because
+-- that's just how I like to do things.
+
+-- But sometimes I like to introduce repetition
+-- for a few moments. The "iter" function is kind
+-- of a quick way to do it, so I dedicated a
+-- switch on my controller to enable it for me:
+let useIter p = every (  cI 0 "89" ) (iter 8) $ p
+
+d1  
+  $ (|* gain 1.2)
+  $ stack [
+    -- pad
+    bgOn $ slow 4 $ (|+ note (shiftBy 1100 $ choose [-36,-24,-12])) 
+      $ note (scale "ritusen" "{0 -1 1 -2 2}%1") # pad 
+    , useIter $ reduce -- added useIter here only on the drum substack
+      $ stack [
+        -- kick
+        bdOn $ struct main $ bd # gain 0.8
+        -- perc1
+        , perc1On $ someCyclesBy 0.5 (superimpose (0.125 ~>)) $ (0.0625 ~>) 
+          $ struct main $ perc1
+        -- perc2
+        , perc2On $ someCyclesBy 0.5 (superimpose (0.125 ~>)) $ (0.125 ~>) 
+          $ struct main $ perc2
+        -- cp
+        , clapOn $ struct cpp $ cp
+        -- ch
+        , hatOn $ sometimesBy 0.08 (|+ midichan 1) 
+          $ struct chp $ ch
+      ]
+  ] # rytm # cps (170/240)
+
+
+
+hush
+
+
+-- I also like to vary tempo randomly every cycle. It can 
+-- be kind of a jarring effect, but sometimes I
+-- craft patterns around this idea.
+
+-- The functions below allow me to use a knob to control
+-- the scale of tempo variation per cycle:
+
+let minTempo = (range 1 0.333 $ (cF 0 "88"))
+    maxTempo = (range 1 1.25 $ (cF 0 "88"))
+    discRange a b = (segment 1 $ range a b $ shrand 70000)
+    cpsDisc min max = (|* cps (discRange min max))
+
+-- then I add the "cpsDisc" function at the top:
+d1  
+  $ cpsDisc minTempo maxTempo
+  $ (|* gain 1.2)
+  $ stack [
+    -- pad
+    bgOn $ slow 4 $ (|+ note (shiftBy 1100 $ choose [-36,-24,-12])) 
+      $ note (scale "ritusen" "{0 -1 1 -2 2}%1") # pad 
+    , useIter $ reduce
+      $ stack [
+        -- kick
+        bdOn $ struct main $ bd # gain 0.8
+        -- perc1
+        , perc1On $ someCyclesBy 0.5 (superimpose (0.125 ~>)) $ (0.0625 ~>) 
+          $ struct main $ perc1
+        -- perc2
+        , perc2On $ someCyclesBy 0.5 (superimpose (0.125 ~>)) $ (0.125 ~>) 
+          $ struct main $ perc2
+        -- cp
+        , clapOn $ struct cpp $ cp
+        -- ch
+        , hatOn $ sometimesBy 0.08 (|+ midichan 1) 
+          $ struct chp $ ch
+      ]
+  ] # rytm # cps (170/240)
+
+
+hush
+
+
+---------------------
+-- SCENE VARIATION --
+---------------------
+
+-- This feature is specific to my synth, but I bet
+-- the principle might apply to other synths and setups.
+
+-- I can change the patch on my drum synth by setting it's scene.
+-- This is done with a simple MIDI CC input.
+
+-- I like to change the scene randomly. I use a knob on my MIDI
+-- controller to tell Tidal how much to vary the scene randomness.
+
+let 
+    -- scale scene knob from 0 to 4
+    sceneRange = (range 0 4 $ (cF 0 "90"))
+    -- MIDI output mapping to send CC to drum synth
+    scene pat = ccv pat # ccn 92 # rytm
+
+
+d1  
+  $ cpsDisc minTempo maxTempo
+  $ (|* gain 1.2)
+  $ stack [
+    -- pad
+    bgOn $ slow 4 $ (|+ note (shiftBy 1100 $ choose [-36,-24,-12])) 
+      $ note (scale "ritusen" "{0 -1 1 -2 2}%1") # pad 
+    , useIter $ reduce
+      $ stack [
+        -- kick
+        bdOn $ struct main $ bd # gain 0.8
+        -- perc1
+        , perc1On $ someCyclesBy 0.5 (superimpose (0.125 ~>)) $ (0.0625 ~>) 
+          $ struct main $ perc1
+        -- perc2
+        , perc2On $ someCyclesBy 0.5 (superimpose (0.125 ~>)) $ (0.125 ~>) 
+          $ struct main $ perc2
+        -- cp
+        , clapOn $ struct cpp $ cp
+        -- ch
+        , hatOn $ sometimesBy 0.08 (|+ midichan 1) 
+          $ struct chp $ ch
+        -- the scene changes twice per cycle with "segment 2".
+        -- send random scene to drum synth based on sceneRange knob
+        , scene (segment 2 $ range 0 sceneRange $ shrand 94991) 
+      ]
+  ] # rytm # cps (170/240)
+
+
+hush
+
+
+
+-------------
+-- SUMMARY --
+-------------
+
+-- Compose in code.
+-- Perform on a controller.
+
+-- All these features together result in a kind of 
+-- performance ecosystem to play in.
+

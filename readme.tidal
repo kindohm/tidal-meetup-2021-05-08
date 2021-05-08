@@ -13,10 +13,13 @@
 
 -- https://tidalcycles.org/SuperDirt_MIDI_Tutorial
 
+-- this content is available at:
+-- https://bit.ly/kindohm-tidal-meetup-2
 
-----------------------
--- BASIC NOTE OUTPUT--
-----------------------
+
+-----------------------
+-- BASIC NOTE OUTPUT --
+-----------------------
 
 -- vanilla note output. my drum synth's default note is C3:
 
